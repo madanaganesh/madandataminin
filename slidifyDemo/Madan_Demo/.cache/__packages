@@ -1,0 +1,17 @@
+base
+ggplot2
+lattice
+caret
+randomForest
+e1071
+MASS
+klaR
+survival
+gbm
+plyr
+rpart
+corrplot
+hexbin
+slidify
+slidifyLibraries
+jpeg

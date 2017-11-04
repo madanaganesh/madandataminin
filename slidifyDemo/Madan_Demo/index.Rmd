@@ -1,0 +1,499 @@
+---
+title       : DATA MINING-FINAL PROJECT 
+subtitle    : DIABETES DETECTION
+author      : 
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+
+## PROJECT OVERVIEW
+
+1. Data Mining project to predict Diabetes in Females participants
+2. Binomial Regression 
+3. Comes under classification with yes/no output
+
+---
+
+## DATA INFORMATION
+
+1. Data contains 768 instances all female participants
+2. Has 8 predictor attributes and 1 predicted attribute 
+3. Explaining attributes
+
+-Pregnancies-Number of pregnancies(Numeric)
+
+-Glucose-Plasma glucose concentration (Numeric)
+    
+-BloodPressure-Diastolic blood pressure (mm Hg (Numeric)	
+    
+-SkinThickness-Triceps skin fold thickness (mm) (Numeric)	
+    
+-Insulin- 2-Hour serum insulin (mu U/ml) (Numeric)	
+    
+-BMI- Body mass index level (Numeric)	
+    
+-DPF-	Diabetic Pedgree Factor (Numeric) Ancestorial history of disease
+
+-Age- Age (years) (numeric)
+
+-OutcomeClass variable (YES or NO)
+
+---
+
+## libraries required
+```{r}
+library(caret)
+library(randomForest)
+library(e1071)
+library(klaR)
+library(e1071)
+library(corrplot)
+library(ggplot2)
+library(hexbin)
+library(slidify)
+library(slidifyLibraries)
+library(lattice)
+```
+
+---
+
+## Loading the data for exploratory data analysis
+```{r}
+diabetes<- read.csv("C:/Users/Madan/Documents/diabetes.csv",header=TRUE, stringsAsFactors = TRUE)
+diabetes
+```
+
+---
+
+## EDA-PLOT-Detected and non-detected
+```{r}
+library(ggplot2)
+plot1=ggplot(diabetes, aes(x =diabetes$Outcome )) + geom_bar()
+
+```
+
+---
+
+```{r}
+plot1
+```
+
+---
+
+## EDA-CORRELATION PLOT-All variables
+```{r}
+library(corrplot)
+diabetes1<- read.csv("C:/Users/Madan/Documents/diabetes1.csv",header=TRUE, stringsAsFactors = TRUE)
+corplot=cor(diabetes1)
+```
+
+---
+
+```{r}
+corplot1=corrplot(corplot,order="hclust",method="number")
+```
+
+---
+
+## EDA-SCATTER-Age vs Pregnancies
+```{r}
+scatter1=xyplot(diabetes$Age ~ diabetes$Pregnancies, groups=diabetes$Outcome, data = diabetes,auto.key = list(corner = c(0, .98)), cex = .75)
+```
+
+---
+
+```{r}
+scatter1 ##age vs preg
+```
+
+---
+
+```{r}
+d <- ggplot(diabetes, aes(Pregnancies,Age))
+```
+
+---
+
+```{r}
+d + geom_hex()
+```
+
+---
+
+## EDA-SCATTER-SkinThickness vs Insulin
+```{r}
+scatter2=xyplot(diabetes$SkinThickness ~ diabetes$Insulin, groups=diabetes$Outcome, data = diabetes,auto.key = list(corner = c(0, .98)), cex = .75)
+```
+
+---
+
+```{r}
+scatter2 ## insulin vs skinThi
+```
+
+---
+
+```{r}
+d <- ggplot(diabetes, aes(Insulin,SkinThickness))
+```
+
+---
+
+```{r}
+d + geom_hex()
+```
+
+---
+
+## EDA-SCATTER-BMI vs SkinThickness
+```{r}
+scatter3=xyplot(diabetes$BMI ~ diabetes$SkinThickness, groups=diabetes$Outcome, data = diabetes,auto.key = list(corner = c(0, .98)), cex = .75)
+```
+
+---
+
+```{r}
+scatter3 ## BMI vs skinthi
+```
+
+---
+
+```{r}
+d <- ggplot(diabetes, aes(SkinThickness,BMI))
+```
+
+---
+
+```{r}
+d + geom_hex()
+```
+
+---
+
+## EDA-SCATTER-Insulin vs Glucose
+```{r}
+scatter4=xyplot(diabetes$Glucose ~ diabetes$Insulin, groups=diabetes$Outcome, data = diabetes,auto.key = list(corner = c(0, .98)), cex = .75)
+```
+
+---
+
+```{r}
+scatter4 ## gluco vs insu
+```
+
+---
+
+```{r}
+d <- ggplot(diabetes, aes(Insulin,Glucose))
+```
+
+---
+
+```{r}
+d + geom_hex()
+```
+
+---
+
+## EDA-SCATTER-Age vs Glucose
+```{r}
+scatter5=xyplot(diabetes$Age ~ diabetes$Glucose, groups=diabetes$Outcome, data = diabetes,auto.key = list(corner = c(0, .98)), cex = .75)
+```
+
+---
+
+```{r}
+scatter5 ## age vs glucose
+```
+
+---
+
+```{r}
+d <- ggplot(diabetes, aes(Glucose,Age))
+```
+
+---
+
+```{r}
+d + geom_hex()
+```
+
+---
+
+## EDA-HISTOGRAM-Age
+```{r}
+hist(diabetes$Age,col = "pink", freq = TRUE)
+```
+
+---
+
+## EDA-HISTOGRAM-BMI
+```{r}
+hist(diabetes$BMI,col = "pink", freq = TRUE)
+```
+
+---
+
+## EDA-HISTOGRAM-Glucose
+```{r}
+hist(diabetes$Glucose,col = "pink", freq = TRUE)
+```
+
+---
+
+## EDA-HISTOGRAM-BloodPressure
+```{r}
+hist(diabetes$BloodPressure,col = "pink", freq = TRUE)
+```
+
+---
+
+## EDA-BOXPLOT-Glucose
+```{r}
+boxplot(Glucose~Outcome, data=diabetes)
+```
+
+---
+
+## EDA-BOXPLOT-Age
+```{r}
+boxplot(Age~Outcome, data=diabetes)
+```
+
+---
+
+## EDA-BOXPLOT-BMI
+```{r}
+boxplot(BMI~Outcome, data=diabetes)
+```
+
+---
+
+## EDA-BOXPLOT-BloodPressure
+```{r}
+boxplot(BloodPressure~Outcome, data=diabetes)
+```
+
+---
+
+## EDA-BOX&HISTO- AGE
+```{r}
+plot7={layout(matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
+par(mar=c(2, 2, 0.5, 1))
+boxplot(Age~Outcome,data=diabetes,horizontal=TRUE,  outline=TRUE, frame=FALSE, col = "green1")
+hist(diabetes$Age, col = "blue", freq = FALSE)
+lines(density(diabetes$Age), col = "red", lwd = 2)}
+```
+
+---
+
+## EDA-BOX&HISTO-BMI
+```{r}
+layout(matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
+par(mar=c(2, 2, 0.5, 1))
+boxplot(BMI~Outcome,data=diabetes,horizontal=TRUE,  outline=TRUE, frame=FALSE, col = "green1")
+hist(diabetes$BMI, col = "blue", freq = FALSE)
+lines(density(diabetes$BMI), col = "red", lwd = 2)
+```
+
+---
+
+## EDA-BOX&HISTO- Bloodpressure
+```{r}
+layout(matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
+par(mar=c(2, 2, 0.5, 1))
+boxplot(BloodPressure~Outcome,data=diabetes,horizontal=TRUE,  outline=TRUE, frame=FALSE, col = "green1")
+hist(diabetes$BloodPressure, col = "blue", freq = FALSE)
+lines(density(diabetes$BloodPressure), col = "red", lwd = 2)
+```
+
+---
+
+## EDA-BOX&HISTO- Glucose
+```{r}
+plot7={layout(matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
+par(mar=c(2, 2, 0.5, 1))
+boxplot(Glucose~Outcome,data=diabetes,horizontal=TRUE,  outline=TRUE, frame=FALSE, col = "green1")
+hist(diabetes$Glucose, col = "blue", freq = FALSE)
+lines(density(diabetes$Glucose), col = "red", lwd = 2)}
+```
+
+---
+
+## EDA-BAR PLOT- Age
+```{r}
+bar_plt <- ggplot(diabetes, aes(x =Age, fill=Outcome))
+bar_plt <- bar_plt + geom_bar()
+```
+
+---
+
+```{r}
+bar_plt
+```
+
+---
+
+## EDA-BAR PLOT- Glucose
+```{r}
+bar_plt <- ggplot(diabetes, aes(x =Glucose, fill=Outcome))
+bar_plt <- bar_plt + geom_bar()
+```
+
+---
+
+```{r}
+bar_plt
+```
+
+---
+
+## EDA-BAR PLOT- BloodPressure
+```{r}
+bar_plt <- ggplot(diabetes, aes(x =BloodPressure, fill=Outcome))
+bar_plt <- bar_plt + geom_bar()
+```
+
+---
+
+```{r}
+bar_plt
+```
+
+---
+
+## EDA-BAR PLOT- BMI
+```{r}
+bar_plt <- ggplot(diabetes, aes(x =BMI, fill=Outcome))
+bar_plt <- bar_plt + geom_bar()
+```
+
+---
+
+```{r}
+bar_plt
+```
+
+---
+  
+## Data loading for Model prediction
+```{r}
+rawdata=read.csv("C:/Users/Madan/Documents/diabetes.csv",header=TRUE, stringsAsFactors = TRUE)
+rawdata$Outcome <- as.factor(rawdata$Outcome)
+set.seed(19910104)
+Train <- createDataPartition(rawdata$Outcome, p=0.7, list=FALSE)
+nrow(rawdata)
+training <- rawdata[ Train, ]
+nrow(training)
+testing <- rawdata[ -Train, ]
+nrow(testing)
+```
+
+---
+  
+## Model 1-GRADIENT BOOSTING-all atributes
+```{r}
+mod_gbm <- train(Outcome ~ . , data=training, method="gbm")
+```
+
+---
+  
+## Model 1-GRADIENT BOOSTING-all atributes-summary
+```{r}
+summary(mod_gbm)
+```
+
+---
+  
+## Model 1-GRADIENT BOOSTING-all atributes-varimp
+```{r}
+varImp(mod_gbm)
+```
+
+---
+  
+## Model 1-GRADIENT BOOSTING-all atributes-Prediction & Accuracy
+```{r}
+pred_gbm <- predict(mod_gbm,newdata=testing)
+confusionMatrix(data=pred_gbm, testing$Outcome)
+```
+
+---
+  
+## Model 1-GRADIENT BOOSTING-selected atributes-training
+```{r}
+mod_gbm <- train(Outcome ~ Glucose+BMI+Age+Pregnancies+DBF , data=training, method="gbm")
+```
+
+---
+  
+## Model 1-GRADIENT BOOSTING-selected attributes-Prediction & Accuracy
+```{r}
+pred_gbm <- predict(mod_gbm,newdata=testing)
+confusionMatrix(data=pred_gbm, testing$Outcome)
+```
+
+---
+  
+## Model 2-DECISION TREE-training,testing&prediction
+```{r}
+mod_rpart <- train(Outcome ~ Glucose+BMI+Age+Pregnancies , data=training, method="rpart")
+pred_rpart <- predict(mod_rpart,newdata=testing)
+confusionMatrix(data=pred_rpart, testing$Outcome)
+```
+
+---
+  
+## Model 3-GENERALIZED LENIAR MODEL-training,testing&prediction
+```{r}
+mod_rpart <- train(Outcome ~ Glucose+BMI+Age+Pregnancies+DBF , data=training, method="glm")
+pred_rpart <- predict(mod_rpart,newdata=testing)
+confusionMatrix(data=pred_rpart, testing$Outcome)
+```
+
+---
+  
+## Model 4-NAIVE BAYES-training
+```{r}
+mod_nb <- train(Outcome ~ Glucose+BMI+Age+Pregnancies, data=training, method="nb")
+```
+
+---
+  
+## Model 4-NAIVE BAYES-prediction
+```{r}
+pred_nb <- predict(mod_nb, testing, type="raw")
+```
+
+---
+  
+## Model 4-NAIVE BAYES-accuracy
+```{r}
+confusionMatrix(data=pred_nb, testing$Outcome)
+```
+
+---
+  
+## CONCLUSION
+  
+1. Model selected according to accuracy
+2. Naive bayes has a highest accuracy of 81.3%
+
+---
+  
+## WEB REFERENCES
+  
+  1. http://slidify.org/
+  2. https://rpubs.com/
+  3. https://www.kaggle.com/
+  4. https://github.com/
+  
+---
+  
+##                   THANK YOU
